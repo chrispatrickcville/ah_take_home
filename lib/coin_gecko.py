@@ -4,6 +4,7 @@ import requests
 from lib.utils import func_args_preprocessing
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
+from time import sleep
 
 
 
@@ -25,6 +26,7 @@ class CoinGeckoAPI:
 
     def __request(self, url, include_response_header=False):
         try:
+            sleep(3)
             response = self.session.get(url, timeout=self.request_timeout)
         except requests.exceptions.RequestException:
             raise
@@ -69,6 +71,7 @@ class CoinGeckoAPI:
 
     def get_exchanges(self, id):
         """Get all ticker identifiers for a given id"""
+        print(f'Requesting first batch for {id}', flush=True)
         first_batch, response_header = self.__get_coin_ticker_by_id(id, include_response_header=True)
         if first_batch:
             tickers = self.__extract_tickers(first_batch)
@@ -76,6 +79,7 @@ class CoinGeckoAPI:
             page = 0
             while total_tickers > len(tickers):
                 page += 1
+                print(f'Requesting batch {page+1} for {id}', flush=True)
                 batch = self.__get_coin_ticker_by_id(id, page=page)
                 tickers.extend(self.__extract_tickers(batch))
             return {

@@ -16,33 +16,44 @@ app = Flask(__name__)
 def process_response(ids):
     global ITER
     global results
+    query_ids = []
     for id in ids:
         ITER += 1
         task_run = deepcopy(ITER)
         if id not in results:
-            result = cg.get_exchanges(id)
-            if result:
-                results.update({
-                    id: {
-                        **result,
-                        'taskRun': task_run
-                    }
-                })
-                print(f'Coin ID {id} retrieved!', flush=True)
+            results.update({
+                id: {
+                    'id': id,
+                    'taskRun': task_run
+                }
+            })
+            query_ids.append(id)
         else:
             print(f'Coin ID {id} already retrieved, skipping', flush=True)
+    for id in query_ids:
+        result = cg.get_exchanges(id)
+        if result:
+            results[id].update({
+                **result
+            })
+            print(f'Coin ID {id} retrieved!', flush=True)
 
 @app.route('/coins', methods=['GET', 'POST'])
 def coins():
     if request.method == 'GET':
         print('Getting coins')
         global results
-        return {'coins': list(results.values())}
+        completed_results = [
+            result for result in results.values()
+            if 'exchanges' in result
+        ]
+        return {'coins': completed_results}
     elif request.method == 'POST':
         if request.headers['Content-Type'] == 'text/csv':
-            # Need to update once we see what the data looks like
-            f = request.files['coins']
-            ids = request.headers['coins'].split(',')
+            ids = request.data.\
+                decode('utf-8').\
+                replace('coins\n', '').\
+                split('\n')
         elif request.headers['Content-Type'] == 'application/json':
             ids = request.get_json()['coins']
 

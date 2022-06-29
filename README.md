@@ -16,7 +16,7 @@ Run the following commands:
 docker pull chrispatrick/ah-take-home:0.1.0
 docker run -p 5000:5000 -d chrispatrick/ah-take-home:0.1.0
 ```
-You can check to see that the docker container is running with:
+Check to see that the docker container is running with:
 ```
 docker ps | grep chrispatrick
 ```
@@ -24,7 +24,7 @@ docker ps | grep chrispatrick
 Once the Flask app is running (via either method), you will use the following endpoint for sending `POST` coin retrieval tasks:
 http://0.0.0.0:5000/coins
 
-You can retrieve the retrieved coin data at any time by sending a `GET` request to the same endpoint. The data will be returned in the following `json` format:
+You can request the retrieved coin data at any time by sending a `GET` request to the same endpoint. The data will be returned in the following `json` format:
 ```
 {
    "coins": [
