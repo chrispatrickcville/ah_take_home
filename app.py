@@ -1,6 +1,5 @@
 import os
 
-from copy import deepcopy
 from flask import Flask, request
 from lib.coin_gecko import CoinGeckoAPI
 from threading import Thread
@@ -19,17 +18,16 @@ def process_response(ids):
     query_ids = []
     for id in ids:
         ITER += 1
-        task_run = deepcopy(ITER)
         if id not in results:
             results.update({
                 id: {
                     'id': id,
-                    'taskRun': task_run
+                    'taskRun': ITER
                 }
             })
             query_ids.append(id)
         else:
-            print(f'Coin ID {id} already retrieved, skipping', flush=True)
+            print(f'Coin ID {id} already retrieved or in progress, skipping', flush=True)
     for id in query_ids:
         result = cg.get_exchanges(id)
         if result:
@@ -41,7 +39,7 @@ def process_response(ids):
 @app.route('/coins', methods=['GET', 'POST'])
 def coins():
     if request.method == 'GET':
-        print('Getting coins')
+        print('Getting coins', flush=True)
         global results
         completed_results = [
             result for result in results.values()

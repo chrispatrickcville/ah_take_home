@@ -4,7 +4,11 @@ import requests
 from lib.utils import func_args_preprocessing
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
-from time import sleep
+from time import (
+    sleep,
+    time
+)
+from typing import List
 
 
 
@@ -26,7 +30,7 @@ class CoinGeckoAPI:
 
     def __request(self, url, include_response_header=False):
         try:
-            sleep(3)
+            sleep(2.5)
             response = self.session.get(url, timeout=self.request_timeout)
         except requests.exceptions.RequestException:
             raise
@@ -49,7 +53,7 @@ class CoinGeckoAPI:
                 pass
             raise
 
-    def __api_url_params(self, api_url, params, api_url_has_params=False):
+    def __api_url_params(self, api_url: str, params: dict, api_url_has_params: bool=False) -> str:
         if params:
             api_url += '&' if api_url_has_params else '?'
             for key, value in params.items():
@@ -60,18 +64,19 @@ class CoinGeckoAPI:
         return api_url
 
     @func_args_preprocessing
-    def __get_coin_ticker_by_id(self, id, include_response_header=False, **kwargs):
+    def __get_coin_ticker_by_id(self, id: str, include_response_header: bool=False, **kwargs):
         """Get coin tickers (paginated to 100 items)"""
         api_url = '{0}coins/{1}/tickers'.format(self.api_base_url, id)
         api_url = self.__api_url_params(api_url, kwargs)
         return self.__request(api_url, include_response_header)
 
-    def __extract_tickers(self, response: dict):
+    def __extract_tickers(self, response: dict) -> List[str]:
         return [ticker['market']['identifier'] for ticker in response['tickers']]
 
-    def get_exchanges(self, id):
+    def get_exchanges(self, id: str) -> dict:
         """Get all ticker identifiers for a given id"""
         print(f'Requesting first batch for {id}', flush=True)
+        start_time = time()
         first_batch, response_header = self.__get_coin_ticker_by_id(id, include_response_header=True)
         if first_batch:
             tickers = self.__extract_tickers(first_batch)
@@ -82,6 +87,8 @@ class CoinGeckoAPI:
                 print(f'Requesting batch {page+1} for {id}', flush=True)
                 batch = self.__get_coin_ticker_by_id(id, page=page)
                 tickers.extend(self.__extract_tickers(batch))
+            run_time = round((time() - start_time) / 60, 4)
+            print(f'Batch processing for {id} completed in {run_time} minutes', flush=True)
             return {
                 'id': id,
                 'exchanges': tickers
