@@ -50,6 +50,9 @@ In addition to having the ability to send `POST` requests with coin IDs for retr
 
 Note that invalid coins will not be included, nor will duplicated instances of any coins. Also, the result will only include records for coins for which all exchanges have been retrieved. With some of the more popular coins, this may take several minutes to complete.
 
+### Notes
+- A big shout out to Manolis Christoforou, whose [Python3 wrapper for CoinGecko](https://github.com/man-c/pycoingecko) I used extensively. I would have imported/used that library, but there were some adjustments I needed to make to allow for requesting all pages of exchanges for a coin that had more than 100 exchanges.
+
 ### Future Work
 This is a WIP and there is much room for improvement, including the following:
 - Coin records are stored to memory. Next step could be to save to file or SQL database.
